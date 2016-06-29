@@ -34,12 +34,12 @@ module Tcxxxer
       end
     end
 
-    def activities 
-      @doc.activities
+    def courses
+      @doc.courses
     end
 
-    def activity(activity_id)
-      @doc.activity(activity_id)
+    def course(course_id)
+      @doc.courses(course_id)
     end
   end
 end

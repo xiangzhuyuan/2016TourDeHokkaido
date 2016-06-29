@@ -1,12 +1,9 @@
 require "tcxxxer/version"
-require 'tcxxxer/activity'
+require 'tcxxxer/course'
 require 'tcxxxer/db'
-require 'tcxxxer/fit_parser'
-require 'tcxxxer/gpx_parser'
 require 'tcxxxer/lap'
 require 'tcxxxer/tcx_parser'
 require 'tcxxxer/track_point'
-
 
 require 'nokogiri'
 

@@ -1,5 +1,6 @@
+require 'nokogiri'
 module Tcxxxer
-  
+
   class TcxParser
 
     def self.open(file)
@@ -13,88 +14,60 @@ module Tcxxxer
     end
 
     def parse
-      f = File.open(@file)
+      f    = File.open(@file)
       @doc = Nokogiri.XML(f.read)
+      @doc.remove_namespaces!
       f.close
     end
 
-    def activity(activity_id)
-      activity_node = @doc.xpath('//xmlns:Activity', namespaces).find {|a| a.xpath('xmlns:Id', namespaces).inner_text == activity_id}
-      if activity_node
-        build_activity(activity_node)
-      else
-        nil
-      end
-    end
-    
-    def activities(id=nil)
-      @doc.xpath('//xmlns:Activity', namespaces).map do |activity_node|
-        build_activity(activity_node)
+    def courses()
+      @doc.xpath('//Courses').map do |course_node|
+        build_course(course_node)
       end
     end
 
     private
-    def build_activity(activity_node)
-      activity = Activity.new
-      activity.sport = activity_node['Sport']
-      activity.garmin_activity_id = activity_node.xpath('xmlns:Id', namespaces).inner_text.to_s
-      activity.creator_name = activity_node.xpath('xmlns:Creator/xmlns:Name', namespaces).inner_text.to_s
-      activity.unit_id = activity_node.xpath('xmlns:Creator/xmlns:UnitId', namespaces).inner_text.to_s
-      activity.product_id = activity_node.xpath('xmlns:Creator/xmlns:ProductID', namespaces).inner_text.to_s
-      activity.author_name = activity_node.xpath('xmlns:Creator/xmlns:Name', namespaces).inner_text.to_s
-      activity.activity_date = Time.parse(activity_node.xpath('xmlns:Id', namespaces).inner_text)
+    def build_course(course_node)
+      course       = Course.new
+      course.name  = course_node.xpath('//Name').inner_text.to_s
+      course.lap   = build_lap(course_node.xpath('//Lap'))
+      course.track = build_track_point(course_node.xpath('//Track'))
 
-      activity_node.xpath('xmlns:Lap', namespaces).each do |lap_node|
-        activity.laps << build_lap(lap_node)
-      end
-    
-      activity
+      course
     end
 
     def build_lap(lap_node)
-      lap = Tcxxxer::Lap.new
-      lap.distance = lap_node.xpath('xmlns:DistanceMeters', namespaces).inner_text.to_f
-      lap.avg_speed = lap_node.xpath('xmlns:Extensions/ns3:LX/ns3:AvgSpeed', namespaces).inner_text.to_f
-      lap.max_speed = lap_node.xpath('xmlns:MaximumSpeed', namespaces).inner_text.to_f
-      lap.total_time = lap_node.xpath('xmlns:TotalTimeSeconds', namespaces).inner_text.to_f
-      lap.calories = lap_node.xpath('xmlns:Calories', namespaces).inner_text.to_f
-      lap.avg_heart_rate = lap_node.xpath('xmlns:AverageHeartRateBpm/xmlns:Value', namespaces).inner_text.to_i
-      lap.max_heart_rate = lap_node.xpath('xmlns:MaximumHeartRateBpm/xmlns:Value', namespaces).inner_text.to_i
-      lap.avg_watts = lap_node.xpath('xmlns:Extensions/ns3:LX/ns3:AvgWatts', namespaces).inner_text.to_i
-      lap.max_watts = lap_node.xpath('xmlns:Extensions/ns3:LX/ns3:MaxWatts', namespaces).inner_text.to_i
-      lap.avg_cadence = lap_node.xpath('xmlns:Cadence', namespaces).inner_text.to_i
-      lap.max_cadence = lap_node.xpath('xmlns:Extensions/ns3:LX/ns3:MaxBikeCadence', namespaces).inner_text.to_i
-      lap.intensity = lap_node.xpath('xmlns:Intensity', namespaces).inner_text.to_s.downcase
-
-      lap_node.xpath('xmlns:Track/xmlns:Trackpoint', namespaces).each do |track_point_node|
-        lap.track_points << build_track_point(track_point_node)
-      end
-      lap.calculate_and_cache_attributes
+      lap                    = Tcxxxer::Lap.new
+      lap.total_time_seconds = lap_node.xpath('//TotalTimeSeconds').inner_text.to_s
+      lap.distance_meters    = lap_node.xpath('//DistanceMeters').inner_text.to_s
+      lap.begin_lat          = lap_node.xpath('//BeginPosition/LatitudeDegrees').inner_text.to_s
+      lap.begin_lng          = lap_node.xpath('//BeginPosition/LongitudeDegrees').inner_text.to_s
+      lap.end_lat            = lap_node.xpath('//EndPosition/LatitudeDegrees').inner_text.to_s
+      lap.end_lng            = lap_node.xpath('//EndPosition/LongitudeDegrees').inner_text.to_s
       lap
     end
 
     def build_track_point(track_point_node)
 
-      track_point = Tcxxxer::TrackPoint.new
-      track_point.latitude = track_point_node.xpath('xmlns:Position/xmlns:LatitudeDegrees', namespaces).inner_text.to_f
-      track_point.longitude = track_point_node.xpath('xmlns:Position/xmlns:LongitudeDegrees', namespaces).inner_text.to_f
-      track_point.altitude = track_point_node.xpath('xmlns:AltitudeMeters', namespaces).inner_text.to_f
-      track_point.distance = track_point_node.xpath('xmlns:DistanceMeters', namespaces).inner_text.to_f
-      track_point.heart_rate = track_point_node.xpath('xmlns:HeartRateBpm/xmlns:Value', namespaces).inner_text.to_i
-      track_point.time = Time.parse(track_point_node.xpath('xmlns:Time', namespaces).inner_text)
-      track_point.cadence = track_point_node.xpath('xmlns:Cadence', namespaces).inner_text.to_i
-      track_point.watts = track_point_node.xpath('xmlns:Extensions/ns3:TPX/ns3:Watts', namespaces ).inner_text.to_i
-      track_point.speed = track_point_node.xpath('xmlns:Extensions/ns3:TPX/ns3:Speed', namespaces ).inner_text.to_f
+      track_points = []
+      track_point_node.xpath('//Trackpoint').map do |track_node|
+        track_point            = Tcxxxer::TrackPoint.new
+        track_point.latitude   = track_node.xpath('Position/LatitudeDegrees').inner_text.to_f
+        track_point.longitude  = track_node.xpath('Position/LongitudeDegrees').inner_text.to_f
+        track_point.altitude   = track_node.xpath('AltitudeMeters').inner_text.to_f
+        track_point.distance   = track_node.xpath('DistanceMeters').inner_text.to_f
+        track_point.heart_rate = track_node.xpath('HeartRateBpm').inner_text.to_i
+        track_point.time       = Time.parse(track_node.xpath('Time').inner_text)
+        track_point.cadence    = track_node.xpath('Cadence').inner_text.to_i
+        track_point.watts      = track_node.xpath('Watts').inner_text.to_i
+        track_point.speed      = track_node.xpath('Speed').inner_text.to_f
 
-      #trackpoint.something = self.some_work(some_data)
-      track_point
+        track_points<< track_point
+      end
+
+      track_points
 
     end
-    
-    def namespaces
-      @namespaces ||= @doc.root.namespaces
-      @namespaces["xmlns:ns3"] ||= "http://www.garmin.com/xmlschemas/ActivityExtension/v2"
-      @namespaces
-    end
+
   end
 end
