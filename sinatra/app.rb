@@ -65,9 +65,9 @@ get '/home' do
       _center = "{lat:#{ point_arr[point_arr.length-1][0]}, lng: #{point_arr[point_arr.length-1][1]}}"
 
       @route_point_arr << {
-          :name   => route['name'],
-          :center => _center,
-          :route  => route_str
+        :name   => route['name'],
+        :center => _center,
+        :route  => route_str
       }
     end
     puts @route_point_arr[0]
@@ -90,16 +90,42 @@ get '/logout' do
 end
 
 get '/map' do
-
-  db         = Tcxxxer::DB.open('../tcx/Tour De Hokkaido stage 1.tcx')
-  @points    = []
-  @altitudes = []
+  # input parameter
+  # name
+  NAME = "TourDeHokkaido_day7"
+  db           = Tcxxxer::DB.open('../tcx/TourDeHokkaido_day7.tcx')
+  @points_list = []
   db.courses.each do |course|
-    course.track.each do |point|
-      @points << (point.distance/1000).round(2).to_s+"km"
-      @altitudes << point.altitude.round(2)
-    end
+    course_range = course.track.each_slice(400).to_a
 
+    course_range.each_with_index do |range, _i|
+      @points    = []
+      @altitudes = []
+      range.each do |point|
+        @points << (point.distance/1000).round(2).to_s+"km"
+        @altitudes << point.altitude.round(2)
+        # @points_list << {:points => @points, :altitudes => @altitudes}
+      end
+
+      begin
+          # read all, get each id
+          html_file = "./views/#{NAME}_#{_i}.html"
+          puts "start read erb, and create html file ...."
+          renderer = ERB.new(File.read("./views/line.erb"))
+          result   = renderer.result(binding)
+
+          File.open(html_file, 'w') do |f|
+            puts "write #{html_file} start"
+            f.write(result)
+          end
+
+        rescue => e
+          puts e.message
+        end
+
+    end
   end
-  erb :line
+  # get file list
+  @result_list = Dir["./views/#{NAME}*.html"]
+  erb :line_result
 end
