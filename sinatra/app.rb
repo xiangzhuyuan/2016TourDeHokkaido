@@ -92,8 +92,9 @@ end
 get '/map' do
   # input parameter
   # name
-  NAME = "TourDeHokkaido_day7"
-  db           = Tcxxxer::DB.open('../tcx/TourDeHokkaido_day7.tcx')
+  day = params['day']
+  file_name = "TourDeHokkaido_day#{day}"
+  db           = Tcxxxer::DB.open("./tcx/#{file_name}.tcx")
   @points_list = []
   db.courses.each do |course|
     course_range = course.track.each_slice(400).to_a
@@ -102,14 +103,14 @@ get '/map' do
       @points    = []
       @altitudes = []
       range.each do |point|
-        @points << (point.distance/1000).round(2).to_s+"km"
+        @points << (point.distance/1000).round(2).to_s + "km"
         @altitudes << point.altitude.round(2)
         # @points_list << {:points => @points, :altitudes => @altitudes}
       end
 
       begin
           # read all, get each id
-          html_file = "./views/#{NAME}_#{_i}.html"
+          html_file = "./tcx_result/#{file_name}_#{_i}.html"
           puts "start read erb, and create html file ...."
           renderer = ERB.new(File.read("./views/line.erb"))
           result   = renderer.result(binding)
@@ -126,6 +127,6 @@ get '/map' do
     end
   end
   # get file list
-  @result_list = Dir["./views/#{NAME}*.html"]
+  @result_list = Dir["./tcx_result/#{file_name}*.html"]
   erb :line_result
 end

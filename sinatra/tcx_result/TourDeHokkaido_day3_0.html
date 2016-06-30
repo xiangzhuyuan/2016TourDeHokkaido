@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>Strava Home</title>
+  <meta name="description" content="">
+  <meta name="viewport" content="width=device-width">
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet">
+  <!--<link href="/vendor/bootstrap/css/bootstrap-theme.min.css" rel="stylesheet">-->
+  <style>
+    .fadeout {
+      -webkit-opacity: 0.25;
+      -moz-opacity: 0.25;
+      opacity: 0;
+      -webkit-transition: all 3s ease;
+      -moz-transition: all 3s ease;
+      -ms-transition: all 3s ease;
+      -o-transition: all 3s ease;
+      transition: all 3s ease;
+    }
+
+    .map {
+      height: 100vh;
+      border: gray 1px dashed;
+    }
+
+    canvas {
+      -moz-user-select: none;
+      -webkit-user-select: none;
+      -ms-user-select: none;
+    }
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.1.6/Chart.bundle.min.js"></script>
+
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.0.0/jquery.min.js"></script>
+</head>
+<body>
+<div style="width:100%;">
+  <canvas id="canvas"></canvas>
+</div>
+
+<script>
+  var options = {
+    responsive: true,
+    title: {
+      display: true,
+      text: 'Chart.js Line Chart'
+    },
+    tooltips: {
+      mode: 'label',
+      callbacks: {}
+    },
+    hover: {
+      mode: 'dataset'
+    },
+    scales: {
+      xAxes: [{
+        display: true,
+        scaleLabel: {
+          display: true,
+          labelString: 'Distance'
+        }
+      }],
+      yAxes: [{
+        display: true,
+        scaleLabel: {
+          display: true,
+          labelString: 'Altitude'
+        },
+        ticks: {
+          suggestedMin: -10,
+          suggestedMax: 250,
+        }
+      }]
+    }
+  };
+
+  var data = {
+    labels: ["0.0km", "0.01km", "0.26km", "0.28km", "0.36km", "0.57km", "0.61km", "0.94km", "0.98km", "1.26km", "1.41km", "1.52km", "1.99km", "2.82km", "2.95km", "3.15km", "3.21km", "4.16km", "4.23km", "4.31km", "4.61km", "4.78km", "4.82km", "4.91km", "5.06km", "5.31km", "5.36km", "5.5km", "5.91km", "6.25km", "6.55km", "6.91km", "7.01km", "7.07km", "7.64km", "7.8km", "8.07km", "8.1km", "8.15km", "8.18km", "8.22km", "8.27km", "8.53km", "8.62km", "8.7km", "8.77km", "8.8km", "8.86km", "9.29km", "9.61km", "9.71km", "9.82km", "10.04km", "10.54km", "10.6km", "10.68km", "10.95km", "11.13km", "11.17km", "11.26km", "11.33km", "11.9km", "11.98km", "12.26km", "12.3km", "12.41km", "12.43km", "12.51km", "12.68km", "12.78km", "13.08km", "13.12km", "13.17km", "13.2km", "13.25km", "13.36km", "13.37km", "13.49km", "13.51km", "13.52km", "13.62km", "13.66km", "13.83km", "13.86km", "13.88km", "13.93km", "14.0km", "14.08km", "14.12km", "14.14km", "14.15km", "14.16km", "14.19km", "14.25km", "14.36km", "14.37km", "14.38km", "14.48km", "14.52km", "14.64km", "14.74km", "14.75km", "14.77km", "14.92km", "15.14km", "15.2km", "15.23km", "15.26km", "15.27km", "15.38km", "15.48km", "15.64km", "15.67km", "15.73km", "15.76km", "15.81km", "15.87km", "15.98km", "16.05km", "16.06km", "16.17km", "16.18km", "16.26km", "16.31km", "16.37km", "16.72km", "16.8km", "16.89km", "16.99km", "17.14km", "17.2km", "17.31km", "17.66km", "17.82km", "17.9km", "18.08km", "18.37km", "18.42km", "18.5km", "18.68km", "18.89km", "19.41km", "19.42km", "19.57km", "19.68km", "19.78km", "19.84km", "19.9km", "19.97km", "19.98km", "20.01km", "20.08km", "20.11km", "20.21km", "20.32km", "20.33km", "20.37km", "20.38km", "20.42km", "20.5km", "20.57km", "20.59km", "20.59km", "20.66km", "20.7km", "20.73km", "20.78km", "20.84km", "20.89km", "21.04km", "21.16km", "21.26km", "21.45km", "21.46km", "21.52km", "21.6km", "21.68km", "21.7km", "21.83km", "21.84km", "22.1km", "22.2km", "22.35km", "22.38km", "22.63km", "22.92km", "23.06km", "23.13km", "23.24km", "23.42km", "23.77km", "24.21km", "24.89km", "25.08km", "25.2km", "25.75km", "26.07km", "26.15km", "26.48km", "26.94km", "27.13km", "27.44km", "27.94km", "28.08km", "28.44km", "28.6km", "28.84km", "28.86km", "28.87km", "28.9km", "29.2km", "29.32km", "29.41km", "29.48km", "29.57km", "29.99km", "30.29km", "30.32km", "30.45km", "30.49km", "30.52km", "30.54km", "30.57km", "30.6km", "30.61km", "30.64km", "30.67km", "30.7km", "30.72km", "30.75km", "30.78km", "30.85km", "30.97km", "31.0km", "31.09km", "31.12km", "31.15km", "31.23km", "31.24km", "31.26km", "31.29km", "31.32km", "31.34km", "31.35km", "31.38km", "31.4km", "31.42km", "31.47km", "31.49km", "31.56km", "31.8km", "31.84km", "31.94km", "32.01km", "32.02km", "32.07km", "32.09km", "32.11km", "32.12km", "32.14km", "32.16km", "32.21km", "32.42km", "32.44km", "32.46km", "32.48km", "32.51km", "32.53km", "32.54km", "32.57km", "32.57km", "32.59km", "32.65km", "32.71km", "32.76km", "32.78km", "32.8km", "32.84km", "32.87km", "32.9km", "33.02km", "33.03km", "33.16km", "33.17km", "33.29km", "33.37km", "33.49km", "33.53km", "33.64km", "33.96km", "34.3km", "34.35km", "34.5km", "34.65km", "34.75km", "34.79km", "34.81km", "34.94km", "35.06km", "35.13km", "35.35km", "35.38km", "35.45km", "35.61km", "35.62km", "35.64km", "35.67km", "35.82km", "35.88km", "35.92km", "35.96km", "36.0km", "36.04km", "36.08km", "36.1km", "36.19km", "36.34km", "36.35km", "36.6km", "36.86km", "36.99km", "37.1km", "37.31km", "37.32km", "37.51km", "37.52km", "37.63km", "37.68km", "37.71km", "37.74km", "37.78km", "37.82km", "37.84km", "37.87km", "37.9km", "37.97km", "38.02km", "38.14km", "38.27km", "38.28km", "38.44km", "38.55km", "38.61km", "38.68km", "38.8km", "38.81km", "38.94km", "39.08km", "39.23km", "39.28km", "39.36km", "39.42km", "39.45km", "39.51km", "39.54km", "39.69km", "39.77km", "39.78km", "39.79km", "39.81km", "39.87km", "39.89km", "39.94km", "39.94km", "40.01km", "40.13km", "40.18km", "40.3km", "40.36km", "40.43km", "40.45km", "40.47km", "40.51km", "40.52km", "40.55km", "40.58km", "40.64km", "40.67km", "40.72km", "40.76km", "40.8km", "40.95km", "41.05km", "41.29km", "41.32km", "41.35km", "41.39km", "41.44km", "41.5km", "41.52km", "41.54km", "41.79km", "41.81km", "41.82km", "41.83km", "41.85km", "41.88km", "41.92km", "41.92km", "41.93km"],
+    datasets: [
+      {
+        label: "海拔",
+        fill: false,
+        lineTension: 0.1,
+        backgroundColor: "rgba(75,192,192,0.4)",
+        borderColor: "rgba(75,192,192,1)",
+        borderCapStyle: 'butt',
+        borderDash: [],
+        borderDashOffset: 0.0,
+        borderJoinStyle: 'miter',
+        pointBorderColor: "rgba(75,192,192,1)",
+        pointBackgroundColor: "#fff",
+        pointBorderWidth: 1,
+        pointHoverRadius: 5,
+        pointHoverBackgroundColor: "rgba(75,192,192,1)",
+        pointHoverBorderColor: "rgba(220,220,220,1)",
+        pointHoverBorderWidth: 2,
+        pointRadius: 1,
+        pointHitRadius: 10,
+        data: [6.0, 6.1, 5.9, 5.7, 5.7, 5.5, 5.5, 4.5, 4.6, 8.2, 8.7, 9.4, 20.8, 8.7, 9.2, 16.8, 17.5, 24.5, 26.9, 17.3, 27.5, 29.3, 24.7, 24.3, 22.5, 7.0, 4.4, 4.5, 3.0, 1.8, 1.7, 2.1, 3.8, 10.2, 35.1, 45.8, 52.8, 52.8, 54.8, 60.3, 61.0, 61.3, 62.0, 63.0, 65.2, 62.6, 65.0, 65.5, 60.8, 65.2, 62.3, 56.1, 41.0, 25.4, 24.3, 12.7, 11.2, 9.4, 9.2, 8.9, 8.7, 5.9, 5.2, 5.0, 5.0, 4.5, 4.4, 3.8, 4.0, 4.1, 4.6, 4.6, 4.9, 5.1, 5.4, 5.7, 6.0, 8.7, 8.2, 7.7, 5.7, 5.0, 4.5, 4.4, 4.4, 4.1, 4.0, 4.0, 3.6, 3.5, 3.5, 3.3, 3.0, 2.8, 3.3, 3.3, 3.3, 2.5, 2.3, 1.9, 1.7, 1.7, 1.7, 2.6, 2.8, 3.0, 3.0, 3.0, 3.1, 3.3, 3.1, 6.2, 6.0, 6.5, 6.0, 6.6, 7.0, 7.4, 5.9, 5.6, 4.1, 4.1, 4.2, 3.8, 3.8, 3.6, 3.6, 3.6, 4.0, 3.8, 4.0, 6.4, 5.9, 2.8, 2.3, 3.1, 1.5, 2.3, 3.0, 2.8, 2.3, 3.5, 2.5, 3.0, 3.5, 4.0, 4.4, 4.7, 5.1, 5.1, 5.4, 5.5, 5.7, 5.4, 5.0, 5.1, 5.2, 5.4, 5.5, 5.5, 5.4, 5.4, 5.2, 5.0, 5.0, 4.9, 4.6, 4.4, 4.0, 3.1, 2.6, 2.6, 2.5, 2.5, 2.5, 2.5, 2.3, 2.5, 3.0, 3.0, 4.1, 4.4, 4.0, 4.0, 1.9, 0.7, 0.7, 0.5, 0.5, 3.3, 5.0, 5.5, 5.4, 5.1, 5.1, 5.1, 5.5, 5.9, 5.5, 5.0, 5.1, 5.4, 5.2, 5.1, 4.5, 3.8, 4.0, 3.8, 3.8, 3.6, 3.8, 4.7, 4.9, 4.6, 3.8, 3.1, 2.1, 2.1, 2.1, 2.3, 2.3, 2.3, 2.5, 2.5, 2.6, 2.8, 3.0, 3.1, 3.3, 3.5, 3.8, 4.4, 5.4, 5.5, 6.0, 5.9, 5.7, 5.5, 5.5, 5.5, 5.5, 5.5, 5.4, 5.4, 5.4, 5.4, 5.4, 5.2, 5.1, 5.2, 5.5, 5.7, 5.5, 5.4, 5.9, 7.2, 7.5, 7.7, 7.4, 6.2, 5.9, 5.9, 5.1, 5.1, 5.1, 5.1, 5.1, 5.1, 5.1, 5.2, 5.2, 5.2, 5.5, 5.5, 5.2, 5.2, 5.4, 5.4, 5.5, 5.5, 5.6, 5.6, 5.5, 5.5, 5.6, 5.6, 5.2, 5.4, 5.5, 5.0, 4.9, 4.4, 4.0, 4.5, 4.5, 4.6, 4.6, 4.5, 4.5, 4.4, 4.6, 4.6, 4.9, 4.0, 4.0, 4.4, 4.9, 5.0, 5.0, 5.0, 5.1, 5.2, 5.4, 5.5, 5.5, 5.6, 6.0, 6.1, 6.5, 6.5, 6.5, 6.6, 6.7, 6.7, 6.9, 6.9, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 6.9, 6.9, 6.7, 6.5, 6.5, 6.2, 6.4, 6.4, 6.5, 6.5, 6.5, 6.6, 6.5, 6.5, 6.2, 6.0, 5.6, 5.5, 5.4, 5.5, 5.5, 5.5, 5.5, 5.7, 5.7, 5.9, 5.9, 5.9, 5.9, 6.0, 6.0, 6.0, 6.0, 5.9, 5.9, 5.6, 5.5, 5.5, 5.5, 5.5, 5.5, 5.5, 5.5, 5.5, 5.5, 5.4, 5.2, 5.1, 5.1, 5.1, 5.1, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 1.0, 1.3, 1.3, 1.4, 1.5, 1.8, 2.3, 2.3, 2.5]
+      }
+    ]
+  };
+
+  var ctx = document.getElementById("canvas").getContext("2d");
+
+  var myLineChart = new Chart(ctx, {
+    type: 'line',
+    data: data,
+    options: options
+  });
+
+
+  window.onload = function () {
+    window.myLine = myLineChart;
+  };
+
+</script>
+<!-- Include all compiled plugins (below), or include individual files as needed -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0-alpha/js/bootstrap.min.js"></script>
+
+</body>
+</html>
